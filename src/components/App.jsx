@@ -20,18 +20,25 @@ const App = () => {
     getImages(query, page);
   }, [query, page]);
 
-  const getImages = async (query, page) => {
-    try {
-      setIsLoading(true);
-      const { images, totalImagesCount } = await loadImages(query, page);
-      setImages((prevImages) => [...prevImages, ...images]);
-      setLoadMore(page < Math.ceil(totalImagesCount / 12));
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setIsLoading(false);
-    }
-  };
+ const getImages = async (query, page) => {
+  try {
+    setIsLoading(true);
+    const { images: newImages, totalImagesCount } = await loadImages(query, page);
+
+    setImages((prevImages) => {
+      const uniqueNewImages = newImages.filter((newImage) => {
+        return !prevImages.some((prevImage) => prevImage.id === newImage.id);
+      });
+      return [...prevImages, ...uniqueNewImages];
+    });
+
+    setLoadMore(page < Math.ceil(totalImagesCount / 12));
+    setIsLoading(false);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    setIsLoading(false);
+  }
+};
 
   const handleImageSearch = (query) => {
     setQuery(query);
